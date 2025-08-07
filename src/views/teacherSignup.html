@@ -58,7 +58,7 @@
               web3 = new Web3(web3.currentProvider);
             } else {
               App.web3Provider = new Web3.providers.HttpProvider(
-                    "http://localhost:7545"
+                    "http://localhost:8545"
                   );
                   web3 = new Web3(App.web3Provider);
                   //Added this 3 Aug 2022
@@ -76,6 +76,7 @@
                 $.getJSON("Authentication.json", function (cq) {
                   App.contracts.Authentication = TruffleContract(cq);
                   App.contracts.Authentication.setProvider(App.web3Provider);
+                  App.contracts.Authentication.at("0x5F6bD6782E6Bd9F01ed6E36C0ac223938Ca07A4D");
                 });
               },
               

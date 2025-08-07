@@ -34,20 +34,22 @@ App = {
     return App.initContract();
   },
   initContract: function () {
+    // Use deployed address for CrowdSource
     $.getJSON("CrowdSource.json", function (cq) {
       App.contracts.CrowdSource = TruffleContract(cq);
       App.contracts.CrowdSource.setProvider(App.web3Provider);
+      App.contracts.CrowdSource.at("0x773bBe8932F95793D00995D207F1ae76cC182bEc");
       App.getAllQuestionsFromChain();
       // App.getAllContributions();
       // App.listenForEvents();
-
       // return App.render();
     });
 
-    //Loading authentication contract
+    // Use deployed address for Authentication
     $.getJSON("Authentication.json", function (cq) {
       App.contracts.Authentication = TruffleContract(cq);
       App.contracts.Authentication.setProvider(App.web3Provider);
+      App.contracts.Authentication.at("0x5F6bD6782E6Bd9F01ed6E36C0ac223938Ca07A4D");
     });
   },
 
@@ -108,25 +110,34 @@ App = {
 
 
     const subject = () => {
-      Problem.imgUrl = document
-        .querySelector("#imageUrlText")
-        .innerHTML.toString();
       let subjectsDOM = document.querySelector("#subjects");
-      let selectedSubject = subjectsDOM.options[subjectsDOM.selectedIndex].text;
-      Problem.subject = selectedSubject;
+      if (subjectsDOM && subjectsDOM.options && subjectsDOM.options.length > 0 && subjectsDOM.selectedIndex >= 0) {
+        let selectedSubject = subjectsDOM.options[subjectsDOM.selectedIndex].text;
+        Problem.subject = selectedSubject;
+      } else {
+        Problem.subject = ""; // Set default value if no subject is selected
+      }
     };
 
     const chapter = () => {
       let topicDOM = document.querySelector("#topic");
-      let selectedTopic = topicDOM.options[topicDOM.selectedIndex].text;
-      Problem.topic = selectedTopic;
+      if (topicDOM && topicDOM.options && topicDOM.options.length > 0 && topicDOM.selectedIndex >= 0) {
+        let selectedTopic = topicDOM.options[topicDOM.selectedIndex].text;
+        Problem.topic = selectedTopic;
+      } else {
+        Problem.topic = ""; // Set default value if no topic is selected
+      }
     };
 
     //For question
     const question = () => {
       let questionDOM = document.querySelector(".addQuestionText");
-      let questionText = questionDOM.value;
-      Problem.question = questionText;
+      if (questionDOM) {
+        let questionText = questionDOM.value;
+        Problem.question = questionText;
+      } else {
+        Problem.question = ""; // Set default value if question element is not found
+      }
     };
 
     //For Correct Option
@@ -156,10 +167,15 @@ App = {
       let option2 = document.querySelector("#option2");
       let option3 = document.querySelector("#option3");
       let option4 = document.querySelector("#option4");
-      Problem.options = option1.value;
-      Problem.options += "$" + option2.value;
-      Problem.options += "$" + option3.value;
-      Problem.options += "$" + option4.value;
+      
+      if (option1 && option2 && option3 && option4) {
+        Problem.options = option1.value;
+        Problem.options += "$" + option2.value;
+        Problem.options += "$" + option3.value;
+        Problem.options += "$" + option4.value;
+      } else {
+        Problem.options = ""; // Set default value if option elements are not found
+      }
     };
     if (addForFirstTime) {
       const imgUrl = () => {
@@ -889,537 +905,4 @@ App = {
                       
                   </div>
               </div>
-          </div>`;
-              quesData2 += ques;
-              problemCard2.innerHTML = quesData2;
-            }
-          });
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  },
-  editAndAccept: function (count) {
-    const Problem = {
-      subject: "",
-      topic: "",
-      question: "",
-      options: "",
-      imgUrl: "",
-      ans: 0,
-      approve: false,
-      isApproved: false,
-      d:null
-    };
-
-    function getNewDifficulty() {
-      var d=document
-        .querySelector(`.editDifficulty${count}`)
-        .innerHTML.toString();
-        if(d=="Medium"){
-          Problem.d=1;
-        }
-        if(d=="Hard"){
-          Problem.d=2;
-        }
-        if(d=="Easy"){
-          Problem.d=0;
-        }
-    }
-    function getNewSubject() {
-      Problem.subject = document
-        .querySelector(`.editSubject${count}`)
-        .innerHTML.toString();
-    }
-    function getNewTopic() {
-      Problem.topic = document
-        .querySelector(`.editTopic${count}`)
-        .innerHTML.toString();
-    }
-    function getNewQuestion() {
-      Problem.question = document
-        .querySelector(`.editQuestion${count}`)
-        .innerHTML.toString();
-    }
-    function getNewOptions() {
-      let options = document
-        .querySelector(`.editOptionsOne${count}`)
-        .innerHTML.toString();
-      options +=
-        "$" +
-        document.querySelector(`.editOptionsTwo${count}`).innerHTML.toString();
-      options +=
-        "$" +
-        document
-          .querySelector(`.editOptionsThree${count}`)
-          .innerHTML.toString();
-      options +=
-        "$" +
-        document.querySelector(`.editOptionsFour${count}`).innerHTML.toString();
-      Problem.options = options;
-    }
-    function getNewAns() {
-      let ansText = document
-        .querySelector(`.editAnswer${count}`)
-        .innerHTML.toString();
-      let options = App.getOptions(Problem.options);
-      let foundAns = false;
-      for (let i = 0; i < 4; ++i) {
-        if (ansText === options[i]) {
-          foundAns = true;
-          Problem.ans = i + 1;
-          break;
-        }
-      }
-      if (foundAns == false) {
-        swal("", "Options didn't match with answer, Please check!!!", "info");
-        Problem.ans = -1;
-        return;
-      }
-    }
-    getNewDifficulty();
-    getNewSubject();
-    getNewTopic();
-    getNewQuestion();
-    getNewOptions();
-    getNewAns();
-    if (Problem.ans == -1) return;
-    App.contracts.CrowdSource.deployed()
-      .then(function (instance) {
-        crowdsourceInstance = instance;
-        crowdsourceInstance
-          .problems(count)
-          .then(function (p) {
-            Problem.imgUrl = p[4];
-            return Problem;
-          })
-          .then(function (Problem) {
-            console.log("Edited Problems are:", Problem);
-            const result = crowdsourceInstance.questionAcceptReject(
-              count,
-              Problem.subject,
-              Problem.topic,
-              Problem.question,
-              Problem.options,
-              Problem.imgUrl,
-              Problem.ans,
-              true,
-              true,
-              Problem.d,
-              { from: App.account }
-            );
-            console.log("result", result);
-            return result;
-          })
-          .then(function (result) {
-            window.location = "http://localhost:3000/teacherDashboard.html";
-          })
-          .catch(function (err) {
-            console.error(err);
-          });
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  },
-  sendReward: function (index) {
-    // App.init();
-    // console.log(index);
-    App.contracts.CrowdSource.deployed()
-      .then(function (instance) {
-        let contribution_amount = web3.utils.toWei("1", "Ether");
-        console.log(index, contribution_amount);
-        crowdsourceInstance = instance;
-        // console.log(crowdsourceInstance);
-        crowdsourceInstance
-          .contribute(index, { from: App.account, value: contribution_amount })
-          .then(function () {
-            App.contracts.CrowdSource.deployed()
-              .then(function (instance) {
-                let result = instance.addAContribution(index, {
-                  from: App.account,
-                });
-                return result;
-              })
-              .then(function (result) {
-                window.location = "http://localhost:3000/studentDashboard.html";
-              });
-
-            // x=App.getAllContributions();
-            // console.log(x);
-
-            // App.contracts.CrowdSource.deployed().then(function(instance){
-            //   console.log("byee");
-            //     let contribuee=instance.getOwner(index,{from:App.account});
-            //     console.log(contribuee);
-            //     document.querySelector("#notification-user").innerHTML="Hellp";
-            //     // const li=document.createElement('li');
-            //     // li.innerHTML="Hello";
-            //     // ulEle.appendChild(li);
-            // });
-
-            console.log("Contribute done");
-          })
-          .catch((error) => {
-            console.log(error);
-          });
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  },
-  showGraph: function (subject) {
-    // let graphBtn = document.querySelector("#graphBtn");
-    App.contracts.CrowdSource.deployed().then(function (instance) {
-      console.log(subject);
-      crowdsourceInstance = instance;
-      import("./public/javascript/subjectTopics.js")
-        .then((_topics) => {
-          var topics = _topics.default;
-          var subjects = topics;
-          return subjects[`${subject}`];
-        })
-        .then(function (topics) {
-          var size = topics.length;
-          // console.log(topics);
-          // console.log(size);
-          let xCord = topics,
-            yCord = new Array(size);
-          for (let idx = 0; idx < size; ++idx) {
-            crowdsourceInstance
-              .getCountOfTopic(xCord[idx])
-              .then(function (count) {
-                // console.log(count.toNumber());
-                yCord[idx] = count.toNumber();
-              });
-          }
-          myChart = null;
-          if (myChart != null) {
-            myChart.destroy();
-          }
-          return { xCord, yCord, subject, myChart };
-        })
-        .then(function ({ xCord, yCord, subject, myChart }) {
-          console.log("xCord", xCord);
-          console.log("yCord", yCord);
-          const ctx = document.getElementById(`${subject}`).getContext("2d");
-          myChart = new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: xCord,
-              datasets: [
-                {
-                  label: "Total verified questions",
-                  data: yCord,
-                  backgroundColor: ["rgba(255, 99, 132, 0.2)"],
-                  borderColor: ["rgba(255, 159, 64, 1)"],
-                  borderWidth: 4,
-                },
-              ],
-            },
-            options: {
-              Elements: {
-                point: {
-                  radius: 0,
-                },
-              },
-
-              scales: {
-                y: {
-                  beginAtZero: true,
-                },
-              },
-            },
-          });
-        })
-        .catch((error) => {
-          console.log(error);
-        });
-    });
-  },
-  getAllSub: function (subject) {
-    let problemCard = document.querySelector(".studentDashboard");
-
-    App.contracts.CrowdSource.deployed()
-      .then(function (instance) {
-        crowdsourceInstance = instance;
-        return crowdsourceInstance.problemCount();
-      })
-
-      .then(function (problemCount) {
-        let quesData = "";
-
-        var displayProblemCount1 = 0;
-        var count = 0;
-        var poolCount = 0;
-        for (var i = 1; i <= problemCount; i++) {
-          crowdsourceInstance
-            .pool(i)
-            .then(function (pc) {
-              poolCount = pc.toNumber();
-              // console.log("poolCount", pc.toNumber());
-            })
-            .catch((error) => {
-              console.log(error);
-            });
-          crowdsourceInstance.problems(i).then(function (p) {
-            console.log(p);
-            let currSubject = p[0];
-            let topic = p[1];
-            let question = p[2];
-            let options = App.getOptions(p[3]);
-            let imgHash = p[4];
-            let ans = p[5].toNumber();
-            let approve = p[6];
-            let isApprove = p[7];
-            let difficulty;
-            if(p[8] == 0){
-              difficulty = "Easy"
-            }else if(p[8] == 0){
-              difficulty = "Medium"
-            }else{
-              difficulty = "Hard"
-            }
-            count++;
-            if (
-              approve == true &&
-              isApprove == true &&
-              currSubject == subject
-            ) {
-              displayProblemCount1++;
-
-              var StrProblemCount = displayProblemCount1.toString();
-              var UniqueClassName = "p" + StrProblemCount;
-
-              let ques = `<div class="container questionCard">
-              <div class="unitQuestion">
-                  <div class="stud_question">
-                      <div class="subject">
-                          Subject : ${subject} | ${topic} &nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp&nbsp
-                          Difficulty : ${difficulty}
-                      </div>
-
-                      <div class="question">
-                      Ques ${displayProblemCount1}.  <span class=${UniqueClassName}> ${question} </span> <button onclick="readQuest(${displayProblemCount1});return false;" id="speak"><i class="fa fa-file-audio-o" aria-hidden="true"></i></button>
-                      <br>
-                      <img class="ques-img" src="${imgHash}" alt="">
-                      </div>
-                      <div class="options">
-                          <button class="option">
-                              <div class="option_text">A</div>
-                              &nbsp;
-                              <div class="option_text">
-                              ${options[0]}
-                              </div>
-                          </button>
-                          <button class="option">
-                              <div class="option_text">B</div>
-                              &nbsp;
-                              <div class="option_text">
-                              ${options[1]}
-                              </div>
-                          </button>
-                          <button class="option">
-                              <div class="option_text">C</div>
-                              &nbsp;
-                              <div class="option_text">
-                              ${options[2]}
-                              </div>
-                          </button>
-                          <button class="option">
-                              <div class="option_text">D</div>
-                              &nbsp;
-                              <div class="option_text">
-                              ${options[3]}
-                              </div>
-                          </button>
-                      </div>
-                  </div>
-                  <div class="question-info">
-                      <div class="question-standard">Correct Answer : ${
-                        options[ans - 1]
-                      }
-                      </div>
-                      
-                      <div class="reward">
-                        <div class="upperReward">
-                          <img style="height: 1.9em;" src="assets/ethereum.svg" alt="ETH">
-                          <button class="SendMatic-btn" onClick="App.sendReward(${count})">
-                          Send 1 Matic
-                          </button>
-                          <button class="report-btn" onClick="App.reportQuestion(${count})">report</button>
-                        </div>
-                      <div>
-                      </div class="lowerReward">
-                      <p>Pool :<b> ${poolCount}</b></p>
-                      </div>
-                  </div>
-              </div>
-              </div>
-          </div>`;
-              quesData += ques;
-              problemCard.innerHTML = quesData;
-            }
-          });
-        }
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  },
-  questionAccept: function (index) {
-    console.log("Accept");
-    console.log("index", index);
-    App.init();
-    console.log(App.contracts.CrowdSource);
-    App.contracts.CrowdSource.deployed()
-      .then(function (instance) {
-        crowdsourceInstance = instance;
-        crowdsourceInstance
-          .problems(index)
-          .then(function (p) {
-            const accept = crowdsourceInstance.questionAcceptReject(
-              index, //_problemCount
-              p[0], //_subject
-              p[1], //_topic
-              p[2], //_question
-              p[3], //_options
-              p[4], //_imgHash
-              p[5], //_ans
-              true,
-              true,
-              p[8],
-              { from: App.account }
-            );
-            return accept;
-          })
-          .then(function (accept) {
-            // window.alert("Question accepted successfully");
-            console.log("Rejected promise ", accept);
-            window.location = "http://localhost:3000/teacherDashboard.html";
-          });
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  },
-  questionReject: function (index) {
-    console.log("Rejected");
-    console.log("index", index);
-    App.init();
-    console.log(App.contracts.CrowdSource);
-    App.contracts.CrowdSource.deployed()
-      .then(function (instance) {
-        crowdsourceInstance = instance;
-        crowdsourceInstance
-          .problems(index)
-          .then(function (p) {
-            const rejected = crowdsourceInstance.questionAcceptReject(
-              index,
-              p[0],
-              p[1],
-              p[2],
-              p[3],
-              p[4],
-              p[5],
-              false,
-              true,
-              { from: App.account }
-            );
-            return rejected;
-          })
-          .then(function (rejected) {
-            // window.alert("Question rejected successfully");
-            console.log("Rejected promise ", rejected);
-            window.location = "http://localhost:3000/teacherDashboard.html";
-          });
-      })
-      .catch((e) => {
-        console.log(e);
-      });
-  },
-  getOptions: function (options) {
-    let optArr = [];
-    let currOpt = "";
-    for (let i = 0; i < options.length; ++i) {
-      if (options[i] == "$") {
-        optArr.push(currOpt);
-        currOpt = "";
-        continue;
-      }
-      currOpt += options[i];
-    }
-    optArr.push(currOpt);
-    return optArr;
-  },
-
-  getAllContributions: function () {
-    // let x=['a','b','c'];
-    console.log("byee9");
-    App.contracts.CrowdSource.deployed()
-      .then(function (instance) {
-        crowdSourceInstance1 = instance;
-        return crowdSourceInstance1.contributionCount();
-        // x.push(5);
-      })
-      .then(function (contributionCount) {
-        var ul = document.getElementById("testtt1");
-        // ul.empty();
-        document.getElementById("testtt1").innerHTML = "";
-        let cnt = 0;
-        for (let i = 1; i <= contributionCount && cnt++ < 5; i++) {
-          crowdsourceInstance.contributions(i).then(function (p) {
-            console.log("Logging p", p);
-            // x.push('d');
-            // for (var i=0; i<x.length; i++) {
-            var li = document.createElement("li");
-            // li.classList.add("waves-effect waves-light");
-            li.appendChild(
-              document.createTextNode(
-                `🎉 ${p.substring(0, 6)}....${p.substring(
-                  38,
-                  42
-                )} Got rewarded with 1 Matic`
-              )
-            );
-            ul.appendChild(li);
-            // }
-          });
-          // cnt++;
-          // if(cnt>5) break;
-        }
-      });
-    // x.push('d');
-    // console.log(x.length);
-    // return x;
-  },
-
-  reportQuestion: function (_id) {
-    App.contracts.CrowdSource.deployed()
-    .then(function (instance) {
-      crowdSourceInstance2 = instance;
-      // console.log("Report id",_id);
-        const result = crowdSourceInstance2.report(_id, { from: App.account });
-        return result;
-        // x.push(5);
-      })
-      .then(function (result) {
-        // window.location = "http://localhost:3000/studentDashboard.html";
-        console.log("Report result",result);
-      });
-  },
-};
-
-$(function () {
-  $(window).load(function () {
-    App.init();
-    App.downloadQuestions();
-    App.addQuestion(true);
-    App.getAllQuestionsFromChain();
-    App.getAllSub();
-    App.validateQuestion();
-    App.getAllContributions();
-    App.reportQuestion();
-  });
-});
+          </div>`

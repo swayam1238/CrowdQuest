@@ -70,7 +70,7 @@
   "sourceMap": "60:973:0:-;;;259:52;8:9:-1;5:2;;;30:1;27;20:12;5:2;259:52:0;302:1;290:9;:13;;;;60:973;;;;;;",
   "deployedSourceMap": "60:973:0:-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;91:24;;8:9:-1;5:2;;;30:1;27;20:12;5:2;91:24:0;;;:::i;:::-;;;;;;;;;;;;;;;;;;;710:202;;8:9:-1;5:2;;;30:1;27;20:12;5:2;710:202:0;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;23:1:-1;8:100;33:3;30:1;27:10;8:100;;;99:1;94:3;90:11;84:18;80:1;75:3;71:11;64:39;52:2;49:1;45:10;40:15;;8:100;;;12:14;710:202:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;920:110;;8:9:-1;5:2;;;30:1;27;20:12;5:2;920:110:0;;;:::i;:::-;;;;;;;;;;;;;;;;;;;;;;;319:383;;8:9:-1;5:2;;;30:1;27;20:12;5:2;319:383:0;;;;;;13:2:-1;8:3;5:11;2:2;;;29:1;26;19:12;2:2;319:383:0;;;;;;;;;;21:11:-1;8;5:28;2:2;;;46:1;43;36:12;2:2;319:383:0;;35:9:-1;28:4;12:14;8:25;5:40;2:2;;;58:1;55;48:12;2:2;319:383:0;;;;;;100:9:-1;95:1;81:12;77:20;67:8;63:35;60:50;39:11;25:12;22:29;11:107;8:2;;;131:1;128;121:12;8:2;319:383:0;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;30:3:-1;22:6;14;1:33;99:1;93:3;85:6;81:16;74:27;137:4;133:9;126:4;121:3;117:14;113:30;106:37;;169:3;161:6;157:16;147:26;;319:383:0;;;;;;;;;;;;;;;:::i;:::-;;91:24;;;;:::o;710:202::-;759:13;874:4;:16;879:10;874:16;;;;;;;;;;;;;;;:30;;867:37;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;710:202;:::o;920:110::-;967:7;994:4;:16;999:10;994:16;;;;;;;;;;;;;;;:28;;;;;;;;;;;;987:35;;920:110;:::o;319:383::-;610:10;577:4;:16;582:10;577:16;;;;;;;;;;;;;;;:30;;:43;;;;;;;;;;;;:::i;:::-;;662:10;631:4;:16;636:10;631:16;;;;;;;;;;;;;;;:28;;;:41;;;;;;;;;;;;;;;;;;683:9;;:11;;;;;;;;;;;;;319:383;:::o;60:973::-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;:::i;:::-;;;:::o;:::-;;;;;;;;;;;;;;;;;;;;;;;;;;;:::o",
   "source": "// SPDX-License-Identifier: MIT\r\npragma solidity ^0.5.1;\r\n\r\ncontract Authentication {\r\n    uint256 public noOfUsers;\r\n\r\n    struct User {\r\n        string signatureHash;\r\n        address userAddress;\r\n    }\r\n\r\n    mapping(address => User) private user;\r\n\r\n    constructor() public{\r\n        noOfUsers = 0;\r\n    }\r\n\r\n    function register(string memory _signature) public {\r\n        // require(\r\n        //     user[msg.sender].userAddress ==\r\n        //         address(0x0000000000000000000000000000000000000000),\r\n        //     \"already registered\"\r\n        // );\r\n\r\n        user[msg.sender].signatureHash = _signature;\r\n        user[msg.sender].userAddress = msg.sender;\r\n        noOfUsers++;\r\n    }\r\n\r\n    function getSignatureHash() public view returns (string memory) {\r\n        // require(msg.sender == user[msg.sender].userAddress, \"Not allowed\");\r\n\r\n        return user[msg.sender].signatureHash;\r\n    }\r\n\r\n    function getUserAddress() public view returns (address) {\r\n        return user[msg.sender].userAddress;\r\n    }\r\n}\r\n",
-  "sourcePath": "C:\\Users\\divij\\crowdquest_sih\\contracts\\Authentication.sol",
+  "sourcePath": "C:\\Users\\swaya\\Crowdquest\\CrowdQuest\\contracts\\Authentication.sol",
   "ast": {
     "absolutePath": "project:/contracts/Authentication.sol",
     "exportedSymbols": {
@@ -1903,6 +1903,12 @@
     "version": "0.5.1+commit.c8a2cb62.Emscripten.clang"
   },
   "networks": {
+    "5777": {
+      "events": {},
+      "links": {},
+      "address": "0x5e85Cbd1B8b771b35b40FE6Fc15992478931C7C1",
+      "transactionHash": "0x66bd63fc251f32be89eef6ebbf5376686f97e232313234616e72c67868b844f9"
+    },
     "80001": {
       "events": {},
       "links": {},
@@ -1976,8 +1982,8 @@
       "transactionHash": "0x46fff10ccdd06e0fdc36c988a10c99c7134f709657f5ece843298b8bfddcd1b4"
     }
   },
-  "schemaVersion": "3.4.4",
-  "updatedAt": "2023-03-18T06:21:48.484Z",
+  "schemaVersion": "3.4.16",
+  "updatedAt": "2025-08-07T18:02:54.903Z",
   "networkType": "ethereum",
   "devdoc": {
     "methods": {}
