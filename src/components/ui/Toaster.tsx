@@ -21,7 +21,7 @@ export function useToast() {
   return context
 }
 
-export function Toaster() {
+export function ToasterProvider({ children }: { children: React.ReactNode }) {
   const [toasts, setToasts] = useState<Toast[]>([])
 
   const addToast = (message: string, type: Toast['type']) => {
@@ -56,22 +56,37 @@ export function Toaster() {
 
   return (
     <ToastContext.Provider value={{ addToast }}>
-      <div className="fixed top-4 right-4 z-50 space-y-2">
-        {toasts.map(toast => (
-          <div
-            key={toast.id}
-            className={`flex items-center justify-between p-4 rounded-lg border shadow-lg min-w-80 ${getToastStyles(toast.type)}`}
-          >
-            <span className="text-sm font-medium">{toast.message}</span>
-            <button
-              onClick={() => removeToast(toast.id)}
-              className="ml-4 text-gray-400 hover:text-gray-600"
-            >
-              <X size={16} />
-            </button>
-          </div>
-        ))}
-      </div>
+      {children}
+      <Toaster toasts={toasts} onRemove={removeToast} getToastStyles={getToastStyles} />
     </ToastContext.Provider>
+  )
+}
+
+function Toaster({ 
+  toasts, 
+  onRemove, 
+  getToastStyles 
+}: { 
+  toasts: Toast[]
+  onRemove: (id: string) => void
+  getToastStyles: (type: Toast['type']) => string
+}) {
+  return (
+    <div className="fixed top-4 right-4 z-50 space-y-2">
+      {toasts.map(toast => (
+        <div
+          key={toast.id}
+          className={`flex items-center justify-between p-4 rounded-lg border shadow-lg min-w-80 ${getToastStyles(toast.type)}`}
+        >
+          <span className="text-sm font-medium">{toast.message}</span>
+          <button
+            onClick={() => onRemove(toast.id)}
+            className="ml-4 text-gray-400 hover:text-gray-600"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      ))}
+    </div>
   )
 }
